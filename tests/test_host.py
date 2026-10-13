@@ -34,6 +34,11 @@ target.write_bytes(b'video fixture')
 print(target)
 ''')
         binary.chmod(0o755)
+        # The controlled downloader does not invoke FFmpeg, but the host checks
+        # that it is installed. Keep that prerequisite independent of the OS.
+        ffmpeg = binary.parent / 'ffmpeg'
+        ffmpeg.write_text('#!/bin/sh\nexit 99\n')
+        ffmpeg.chmod(0o755)
         xdg = self.home / '.local/bin/xdg-user-dir'
         xdg.write_text('#!/bin/sh\nprintf "%s/Desktop\\n" "$HOME"\n')
         xdg.chmod(0o755)
@@ -71,6 +76,20 @@ print(target)
         result = self.exchange({'url': 'https://example.org/unsupported'})
         self.assertFalse(result['ok'])
         self.assertIn('Unsupported URL', result['error'])
+
+    def test_missing_ffmpeg_is_reported_before_download(self):
+        # Keep only the fixture bin directory so system FFmpeg cannot mask it.
+        (self.home / '.local/bin/ffmpeg').unlink()
+        payload = json.dumps({'url': 'https://example.org/video'}).encode()
+        result = subprocess.run([sys.executable, str(HOST)],
+                                input=struct.pack('=I', len(payload)) + payload,
+                                capture_output=True, timeout=10,
+                                env=dict(os.environ, HOME=str(self.home),
+                                         PATH=str(self.home / '.local/bin')))
+        response = json.loads(result.stdout[4:])
+        self.assertFalse(response['ok'])
+        self.assertIn('FFmpeg is missing', response['error'])
+        self.assertFalse((self.home / 'Desktop/test-video.mp4').exists())
 
     def test_malformed_and_oversized_frames(self):
         for raw in [b'xx', struct.pack('=I', 70000), struct.pack('=I', 2) + b'{x',
