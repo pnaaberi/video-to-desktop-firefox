@@ -47,6 +47,20 @@ This obtains web-ext through npm; it is a developer check, not a runtime depende
 CI runs the Python/Node checks and package build with read-only repository
 permissions. GitHub Actions are pinned to commit hashes.
 
+Speech dependency changes also run an isolated Python 3.11/3.12 CI matrix. It
+matches the installer's patched pip/setuptools bootstrap floors, installs the
+pinned requirements, checks dependency metadata and advisories,
+decodes generated WAV data through Faster Whisper/PyAV, extracts NumPy features,
+checks malformed audio and FileLock contention, and never downloads a speech
+model or registers the native host. These checks do not certify real-video
+extraction or transcription accuracy.
+
+CI runs on pull requests, main pushes and explicit dispatch. NumPy 2.5 requires
+Python 3.12, so Python 3.11 retains the patched 2.4 series. Keep PyAV 18.1 until
+Faster Whisper supports its next major: PyAV 19 excludes Python 3.11 and removes
+`metadata_errors`, which Faster Whisper 1.2.1 still passes to its decoder. The
+speech matrix must pass before changing either compatibility boundary.
+
 ## Live Firefox check
 
 Install the helper and prerequisites first. Supply a short public video you are
