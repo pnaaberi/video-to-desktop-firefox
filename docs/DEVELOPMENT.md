@@ -47,6 +47,13 @@ This obtains web-ext through npm; it is a developer check, not a runtime depende
 CI runs the Python/Node checks and package build with read-only repository
 permissions. GitHub Actions are pinned to commit hashes.
 
+Speech dependency changes also run an isolated Python 3.11/3.12 CI matrix. It
+installs the pinned requirements, checks dependency metadata and advisories,
+decodes generated WAV data through Faster Whisper/PyAV, extracts NumPy features,
+checks malformed audio and FileLock contention, and never downloads a speech
+model or registers the native host. These checks do not certify real-video
+extraction or transcription accuracy.
+
 ## Live Firefox check
 
 Install the helper and prerequisites first. Supply a short public video you are
