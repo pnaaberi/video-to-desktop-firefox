@@ -48,7 +48,8 @@ CI runs the Python/Node checks and package build with read-only repository
 permissions. GitHub Actions are pinned to commit hashes.
 
 Speech dependency changes also run an isolated Python 3.11/3.12 CI matrix. It
-installs the pinned requirements, checks dependency metadata and advisories,
+matches the installer's patched pip/setuptools bootstrap floors, installs the
+pinned requirements, checks dependency metadata and advisories,
 decodes generated WAV data through Faster Whisper/PyAV, extracts NumPy features,
 checks malformed audio and FileLock contention, and never downloads a speech
 model or registers the native host. These checks do not certify real-video
