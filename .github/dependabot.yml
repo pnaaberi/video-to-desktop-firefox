@@ -4,6 +4,14 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      # PyAV 19 needs Python 3.12 and removes metadata_errors used by faster-whisper 1.2.1.
+      - dependency-name: av
+        versions: [">=19"]
+    groups:
+      # httpx2 pins httpcore2 exactly, so they can only move together.
+      httpx2:
+        patterns: ["httpx2", "httpcore2"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
